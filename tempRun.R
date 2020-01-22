@@ -118,7 +118,7 @@ mySim <- simInitAndSpades(times = times,
                           paths = getPaths(),
                           loadOrder = firePrep, debug = 1)
 
-10. `spades()`
+# 10. `spades()`
 
 
 # 11. Checking your outputs
@@ -143,21 +143,6 @@ mySim <- simInitAndSpades(times = times,
 # rstCurrentBurn
 # burnDT
 # burnMap
-
-
-  #.progress = list(type = "text", interval = 1), # for a progress bar
-  ## If there are further modules, each can have its own set of parameters:
-  #module1 = list(param1 = value1, param2 = value2),
-  #module2 = list(param1 = value1, param2 = value2)
-)
-
-
-
-# Biomass_core
-objects <- list()
-
-#modulePath changed so I can edit in LBMR project
-#spadesModulesDirectory <- dirname(getwd())
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~ SCFM posthoc ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

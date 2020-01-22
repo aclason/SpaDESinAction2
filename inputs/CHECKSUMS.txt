@@ -1,0 +1,2 @@
+"file" "checksum" "filesize" "algorithm"
+"LCC2005_V1_4a_BCR6_NWT.tif" "6f5ad9f2dd7b673c" "3079657" "xxhash64"

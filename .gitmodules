@@ -10,3 +10,6 @@
 [submodule "modules/Biomass_regeneration"]
 	path = modules/Biomass_regeneration
 	url = git@github.com:PredictiveEcology/Biomass_regeneration.git
+[submodule "modules/caribouRSF"]
+	path = modules/caribouRSF
+	url = git@github.com:tati-micheletti/caribouRSF.git
