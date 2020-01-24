@@ -279,7 +279,7 @@ caribou <- simInitAndSpades(times = times,
 
 #### **INTEGRATED MODEL**
 
-At last, we will integrate the forest succesoin, fire and caribou:
+At last, we will integrate the forest succession, fire and caribou:
 
 ```{r integratedModel, message = FALSE, warning = FALSE}
 SpaDESinAction <- simInitAndSpades(times = times, 
@@ -307,7 +307,6 @@ First, lets check the age map, flammable map (where fire can burn), the last yea
 ```{r plotFire, include = FALSE}
 # Fire plots
 clearPlot()
-Plot(scfm$ageMap, title = "Age Map")
 Plot(scfm$flammableMap, title = "Flammable Map", col = c("skyblue", "red"))
 Plot(scfm$rstCurrentBurn, title = "Last year's burns", col = c("lightgrey", "red"))
 Plot(scfm$burnMap, title = "Cummulative burn map")
