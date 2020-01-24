@@ -86,6 +86,7 @@ The RSF model is applied on a decadal time step. The output is a raster layer of
 # install.packages("devtools")
 # devtools::install_github("PredictiveEcology/reproducible", ref = "development", dependencies = TRUE)
 library("reproducible")
+Require(packages = "tati-micheletti/usefun", install_githubArgs = list(ref = "master"))
 Require(packages = "PredictiveEcology/LandR", install_githubArgs = list(ref = "development"))
 Require(packages = "PredictiveEcology/quickPlot", install_githubArgs = list(ref = "development"))
 Require(packages = "PredictiveEcology/SpaDES.tools", install_githubArgs = list(ref = "development"))
@@ -164,7 +165,7 @@ parameters <- list(
     ".plotInitialTime" = times$start
     , "sppEquivCol" = "Boreal"
     , "successionTimestep" = successionTimestep*10
-    , ".useCache" = TRUE 
+    , ".useCache" = "init"
     , ".useParallel" = FALSE
   ),
   Biomass_regeneration = list(
