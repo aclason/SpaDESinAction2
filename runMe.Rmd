@@ -175,7 +175,7 @@ parameters <- list(
     ".plotInitialTime" = times$start
   ),
   scfmSpread = list(
-    "pSpread" = 0.235,
+    "pSpread" = 0.5, #0.235
     "returnInterval" = successionTimestep,
     "startTime" = times$start,
     ".plotInitialTime" = times$start+1,
@@ -204,7 +204,7 @@ regionMap <- Cache(reproducible::prepInputs,
                    fun = "raster::raster", 
                    userTags = "objectName:regionMap")
 Plot(regionMap, title = "The NWT"); Plot(studyArea, addTo = "regionMap", title = "The NWT")
-RTM <- Cache(reproducible::prepInputs, 
+vegetationMap <- Cache(reproducible::prepInputs, 
                           url = "https://drive.google.com/open?id=1WhL-DxrByCbzAj8A7eRx3Y1FVujtGmtN", 
                           studyArea = studyArea,
                           targetFile = "LCC2005_V1_4a_BCR6_NWT.tif",
@@ -224,7 +224,7 @@ scfmDriverPars <- readRDS(file.path(getPaths()$inputPath, "scfmDriverPars.rds"))
 ```{r objects}
 objects <- list(
   # "rasterToMatch" = RTM, # tried removing, it worked
-  "vegMap" = RTM,
+  "vegMap" = vegetationMap,
   "studyArea" = studyArea, #studyArea = studyArea #"studyAreaLarge" = studyAreadid not work: Error in .local(x, y, ...) : extents do not overlap
   "flammableMap" = flammableMap,
   "landscapeAttr" = landscapeAttr,
@@ -287,22 +287,27 @@ SpaDESinAction <- simInitAndSpades(times = times,
                                    modules = allModules, 
                                    objects = objects, 
                                    paths = getPaths(), 
-                                   loadOrder = unlist(allModules))
+                                   loadOrder = unlist(allModules), 
+                                   debug = 1)
 ```
-
-```{r, include = FALSE}
-dev.off() # This closes the device opened, as we open a new one when we run the next call
-```
-
+  
+  
 Note that you can see all events happening, as well as any messages printed during the simulation. Really handy is also to see all plots while the simulation is running. This is really helpful to visually identify potential problems even before the simulation ends.
 
 ### 10. [Checking your outputs](vignettes/10_simOuts.html)
 
 #### **FOREST SUCCESSION**
 
+We can check some outputs from the forest succession module such as the `cohort table` (with information on species, age, biomass, etc.) and the map of `pixelGroups` (with  information on the specific spatial location of the cohort groups):
+```{r outputsLandR}
+clearPlot()
+plot(LandR$pixelGroupMap)
+knitr::kable(rbind(head(LandR$cohortData), tail(LandR$cohortData)))
+```
+
 #### **FIRE**
 
-First, lets check the age map, flammable map (where fire can burn), the last years' fires and the cummulative fire map:
+First, lets check the flammable map (where fire can burn), the last years' fires and the cummulative fire map:
 
 ```{r plotFire, include = FALSE}
 # Fire plots
