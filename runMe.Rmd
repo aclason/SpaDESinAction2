@@ -219,6 +219,8 @@ vegetationMap <- Cache(reproducible::prepInputs,
 flammableMap <- readRDS(file.path(getPaths()$inputPath, "flammableMap.rds"))
 landscapeAttr <- readRDS(file.path(getPaths()$inputPath, "landscapeAttr.rds"))
 scfmDriverPars <- readRDS(file.path(getPaths()$inputPath, "scfmDriverPars.rds"))
+scfmRegimePars <- readRDS(file.path(getPaths()$inputPath, "scfmRegimePars.rds"))
+firePoints <- readRDS(file.path(getPaths()$inputPath, "firePoints.rds"))
 ```
 
 #### 8c. Passing the study area to the `objects` R object  
@@ -229,7 +231,9 @@ objects <- list(
   "studyArea" = studyArea, #studyArea = studyArea #"studyAreaLarge" = studyAreadid not work: Error in .local(x, y, ...) : extents do not overlap
   "flammableMap" = flammableMap,
   "landscapeAttr" = landscapeAttr,
-  "scfmDriverPars" = scfmDriverPars
+  "scfmDriverPars" = scfmDriverPars,
+  "scfmRegimePars" = scfmRegimePars,
+  "firePoints" = firePoints
   )
 ```
 
