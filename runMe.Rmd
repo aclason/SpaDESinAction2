@@ -7,7 +7,7 @@ output:
   pdf_document: default
 ---
 ```{r init, include=FALSE}
-knitr::opts_chunk$set(cache = FALSE, echo = TRUE, eval = FALSE)
+# knitr::opts_chunk$set(cache = FALSE, echo = TRUE, eval = FALSE)
 ```
 
 # Integrated simulation models: forest succession, wildfire and caribou
@@ -52,7 +52,7 @@ The biggest differences between Biomass_core and LANDIS-II lie on how the model 
   `spread`
   
 `scfm` is described by Cumming et al. (1998), with a more accessible version in Armstrong and Cumming (2003).
-It was recently implemented as a collection of SpaDES modules by Cumming, McIntire, and Eddy (in prep), with the addition of automated parameter estimation for fire management records. Scfm models fire as a three stage stochastic process of ignition, escape and spread, with each process represented by a dedicated module. Ignition and spread have already been described. The escape stage models the effect of fire suppression, or other ecological or sampling effects that alter the lower end of the fire size distribution. The empirical quantity is the “escape probability”, the probability that a fire will attain a final size greater than the size of a single pixel. This is simulated in the model by determining an initial spread probability such that the probability that a fire stays within its cell of origin equals the escape probability, after accounting for the effect of lakes and other non-flammable geographic features on fire spread. In effect, this distinguishes the first step of the iterative fire spread process. These three modules are used to simulate a fire regime, in terms of the number of fires that start, the escape probability, and the mean fire size.  
+It was recently implemented as a collection of SpaDES modules by Cumming, McIntire, and Eddy (in prep), with the addition of automated parameter estimation for fire management records. Scfm models fire as a three stage stochastic process of ignition, escape and spread, with each process represented by a dedicated module. Ignition and spread have already been described. The escape stage models the effect of fire suppression, or other ecological or sampling effects that alter the lower end of the fire size distribution. The empirical quantity is the “escape probability”, the probability that a fire will attain a final size greater than the size of a single pixel. This is simulated in the model by determining an initial spread probability such that the probability that a fire stays within its cell of origin equals the escape probability, after accounting for the effect of lakes and other non-flammable geographic features on fire spread. In effect, this distinguishes the first step of the iterative fire spread process. These three modules are used to simulate a fire regime, in terms of the number of fires that start, the escape probability, and the mean fire size.    
 In addition to the scfmIgnition, scfmEscape and scfmSpread modules, scfm makes use of several support modules (or objects passed by the user, as in this case) involved in parameter estimation and model calibration. Fire regime parameters for ignition, escape,  and a mean fire size, are estimated from historic fire data obtained from the Canadian National Fire Database (Canadian Forest Service, n.d.). Spread probabilities are tuned to replicate the empirical mean fire size by a newly implemented calibration procedure. First, the study region raster is buffered by a set distance and a flammability map is generated for the buffered region using the 2005 Land Cover Map of Canada (Latifovic et al., 2005). Landcover classes such as open water,  rock, and ice are classed as non-flammable.  Next, several thousand fires are ignited at random locations in landscape and spread with probabilities randomly sampled from a given range (typically 0.18 to 0.24) of spread probabilities. Fires do not start within the buffer area, but may spread to and from the buffer. This effectively removes the influence of edge effects in determining mean fire size, provided the buffer is “wide enough”.  Then the spread probabilities and resulting fire sizes are fit with a shape-constrained additive model (SCAM) (Pya and Wood, 2015). The SCAM is monotonic to ensure fire size increases for any incremental increase in spread probability. Lastly, a function minimizer, coupled with the `scam predict` method, is used to find the spread probability that will reproduce the estimated mean fire size for the region. Parameterization and calibration of the model can be done separately for all the polygons in a given shapefile (e.g., by ecoregion), allowing spatial variation in fire regime parameters among regions.  
 
 4.  [caribouRSF](!PLACEHOLDER Presentation LandR!) (resource selection function): Statistical relationships between caribou telemetry locations and habitat characteristics have been summarized (Environment Canada 2011) by resource selection function (RSF; Manly et al. 2002) type models for various parts of Canada. We used the top RSF-type model, a binomial GLMM, for the Taiga Plains ecozone (Environment Canada 2011; Table 46). This model was estimated from individual caribou location data collected from 24 Alberta, 50 British Columbia, and 169 NWT VHF-collared adult female caribou between 2000 and 2010 (Environment Canada 2011; Table 39). The analysis used a habitat use-availability design, so the model predicts relative, not absolute, resource selection (Manly et al. 2002).  
@@ -83,8 +83,8 @@ The RSF model is applied on a decadal time step. The output is a raster layer of
 ### 2. [Installing necessary libraries and setting options](02_librariesAndOptions.html)  
 
 ```{r librariesAndOptions}
-install.packages("devtools")
-devtools::install_github("PredictiveEcology/reproducible", ref = "development", dependencies = TRUE)
+# install.packages("devtools")
+# devtools::install_github("PredictiveEcology/reproducible", ref = "development", dependencies = TRUE)
 library("reproducible")
 Require(packages = "PredictiveEcology/LandR", install_githubArgs = list(ref = "development"))
 Require(packages = "PredictiveEcology/quickPlot", install_githubArgs = list(ref = "development"))
@@ -119,13 +119,12 @@ setPaths(cachePath = cacheDirectory,
                         file.path(modulesDirectory, "scfm/modules")),
          inputPath = inputDirectory,
          outputPath = outputDirectory)
-
 ```
 
 ### 5. [Time](vignettes/05_time.html)
 
 ```{r time}
-times <- list(start = 0, end = 40)
+times <- list(start = 0, end = 10)
 ```
 
 ### 6. [Modules](vignettes/06_modules.html)
@@ -137,7 +136,8 @@ These are the modules we will use, in four different simulations.
 modulesLandR <- c("Biomass_borealDataPrep",
                   "Biomass_core")
 
-modulesFire <- c("scfmIgnition",
+modulesFire <- c("scfmLandcoverInit",
+                 "scfmIgnition",
                  "scfmEscape",
                  "scfmSpread")
 
@@ -156,6 +156,10 @@ allModules <- c("Biomass_borealDataPrep",
 ```{r}
 successionTimestep <- 1L
 parameters <- list(
+  Biomass_borealDataPrep = list(
+    "subsetDataBiomassModel" = TRUE,
+    "subsetDataAgeModel" = TRUE
+  ),
   Biomass_core = list(
     ".plotInitialTime" = times$start
     , "sppEquivCol" = "Boreal"
@@ -174,12 +178,9 @@ parameters <- list(
     "pSpread" = 0.235,
     "returnInterval" = successionTimestep,
     "startTime" = times$start,
-    ".plotInitialTime" = times$start,
+    ".plotInitialTime" = times$start+1,
     ".plotInterval" = successionTimestep
     ),
-  scfmRegime = list(fireCause = "L"), #c("L", "H")
-  scfmDriver = list(
-    targetN = 1000),
   caribouRSF = list(
     "decidousSp" = c("Betu_Pap", "Popu_Tre", "Popu_Bal"),
     "predictionInterval" = 20
@@ -189,24 +190,27 @@ parameters <- list(
 
 ### 8. [Objects](vignettes/08_objects.html)  
 
-#### 8a. Generate and plot Study Area  
+#### 8a. Load and plot Study Area  
 
 ```{r studyArea}
-polyMatrix <- matrix(c(-118.269387, 61.783558), ncol = 2)
-areaSize <- 10000000
-set.seed(2020)
-# NWT land cover classes -- base map to locate study area
-regionMap <- Cache(reproducible::prepInputs, url = "https://drive.google.com/open?id=1WhL-DxrByCbzAj8A7eRx3Y1FVujtGmtN",
-                                      targetFile = "LCC2005_V1_4a_BCR6_NWT.tif", 
-                                      destinationPath = getPaths()$inputPath, 
-                                      fun = "raster::raster", userTags = "objectName:regionMap")
-studyAreaOriginal <- SpaDES.tools::randomPolygon(x = polyMatrix, hectares = areaSize) # Create Random polygon in the NWT
-# Reproject study area to match base raster
-studyArea <- projectInputs(x = studyAreaOriginal, targetCRS = crs(regionMap))
-NWT <- readRDS(file.path(getPaths()$inputPath, "NWT_boundaries.rds"))
-plot(NWT); plot(regionMap, add = TRUE)
-clearPlot()
+# load studyArea
+studyArea <- readRDS(file.path(getPaths()$inputPath, "studyArea.rds"))
+
+# NWT land cover classes -- base map to locate study area and be the reference raster (i.e. resolution, crs and extent)
+regionMap <- Cache(reproducible::prepInputs, 
+                   url = "https://drive.google.com/open?id=1WhL-DxrByCbzAj8A7eRx3Y1FVujtGmtN",
+                   targetFile = "LCC2005_V1_4a_BCR6_NWT.tif",
+                   destinationPath = getPaths()$inputPath,
+                   fun = "raster::raster", 
+                   userTags = "objectName:regionMap")
 Plot(regionMap, title = "The NWT"); Plot(studyArea, addTo = "regionMap", title = "The NWT")
+RTM <- Cache(reproducible::prepInputs, 
+                          url = "https://drive.google.com/open?id=1WhL-DxrByCbzAj8A7eRx3Y1FVujtGmtN", 
+                          studyArea = studyArea,
+                          targetFile = "LCC2005_V1_4a_BCR6_NWT.tif",
+                          destinationPath = getPaths()$inputPath,
+                          fun = "raster::raster", 
+                          userTags = "objectName:regionMapCropped", overwrite = TRUE)
 ```
 
 #### 8b. Load objects from inputs folder
@@ -219,7 +223,9 @@ scfmDriverPars <- readRDS(file.path(getPaths()$inputPath, "scfmDriverPars.rds"))
 #### 8c. Passing the study area to the `objects` R object  
 ```{r objects}
 objects <- list(
-  "studyArea" = studyArea,
+  # "rasterToMatch" = RTM, # tried removing, it worked
+  "vegMap" = RTM,
+  "studyArea" = studyArea, #studyArea = studyArea #"studyAreaLarge" = studyAreadid not work: Error in .local(x, y, ...) : extents do not overlap
   "flammableMap" = flammableMap,
   "landscapeAttr" = landscapeAttr,
   "scfmDriverPars" = scfmDriverPars
@@ -236,11 +242,12 @@ First, we will run the LandR (forest succession) model:
 
 ```{r LandRrun}
 LandR <- simInitAndSpades(times = times,
-                                   params = parameters,
-                                   modules = as.list(modulesLandR),
-                                   paths = getPaths(),
-                                   loadOrder = modulesLandR, 
-                                   debug = 1)
+                          objects = objects,
+                          params = parameters,
+                          modules = as.list(modulesLandR),
+                          paths = getPaths(),
+                          loadOrder = modulesLandR,
+                          debug = 1)
 ```
 
 #### **FIRE**
@@ -248,25 +255,26 @@ LandR <- simInitAndSpades(times = times,
 Then, we will run the fire model:
 
 ```{r scfmRun}
-
-scfm <- simInitAndSpades(times = times,
-                                   params = parameters,
-                                   modules = as.list(modulesFire),
-                                   paths = getPaths(),
-                                   loadOrder = modulesFire, 
-                                   debug = 1)
+scfm <- simInitAndSpades(times = times, 
+                         objects = objects,
+                         params = parameters,
+                         modules = as.list(modulesFire),
+                         paths = getPaths(),
+                         loadOrder = modulesFire,
+                         debug = 1)
 ```
 
 #### **CARIBOU RESOURCE SELECTION FUNCTION**
 
 We will follow by running the caribou model:
 
-```{r scfmRun}
+```{r caribouRun}
 caribou <- simInitAndSpades(times = times,
-                                   params = parameters,
-                                   modules = as.list("caribouRSF"),
-                                   paths = getPaths(), 
-                                   debug = 1)
+                            objects = objects,
+                            params = parameters,
+                            modules = as.list("caribouRSF"),
+                            paths = getPaths(),
+                            debug = 1)
 ```
 
 #### **INTEGRATED MODEL**
