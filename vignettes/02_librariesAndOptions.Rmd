@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache = TRUE, echo = TRUE, eval = FALSE)
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ```
 
 #### A. Libraries  
@@ -52,5 +52,5 @@ options(
 )
 ```
 
-`SpaDES` has a lot more options that can be set. The sky is the limit to try them on!
+`SpaDES` has a lot more options that can be set. The sky is the limit to try them out!
 

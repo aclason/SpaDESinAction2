@@ -1,11 +1,11 @@
 ---
-title       : "Modules: The nitty gritty details"
-author      : "Alex M Chubaty, Eliot McIntire, Tati Micheletti"
-date        : "January 2019"
+title: 'Modules: The nitty gritty details'
+author: "Alex M Chubaty, Eliot McIntire, Tati Micheletti"
+date: "January 2019"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache = TRUE, echo = TRUE, eval = FALSE)
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 library("SpaDES")
 ```
 

@@ -1,13 +1,13 @@
 ---
-title       : "simList: What is it and what is in it?"
-author      : "Alex M Chubaty, Eliot McIntire & Tati Micheletti"
-date        : "January 2019"
-editor_options: 
+title: 'simList: What is it and what is in it?'
+author: "Alex M Chubaty, Eliot McIntire & Tati Micheletti"
+date: "January 2019"
+editor_options:
   chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache = TRUE, echo = TRUE, eval = FALSE)
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 library(magrittr)
 library(SpaDES)
 ```
