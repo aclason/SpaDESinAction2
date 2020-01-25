@@ -184,146 +184,283 @@ summary {
 </div>
 
 
-<div id="integrated-simulation-models-forest-succession-wildfire-and-caribou" class="section level2">
-<h2>Integrated simulation models: forest succession, wildfire and caribou</h2>
+<div id="integrated-simulation-models-forest-succession-wildfire-and-caribou" class="section level1">
+<h1>Integrated simulation models: forest succession, wildfire and caribou</h1>
+<div id="brief-description-of-the-models-used" class="section level2">
+<h2>Brief description of the models used</h2>
 <p>The collection of models is an exercise to understand how SpaDES works when integrating different modules. It is composed of 3 main models (with one to several submodules within each):</p>
 <ol style="list-style-type: decimal">
-<li><p><a href="https://github.com/PredictiveEcology/Biomass_borealDataPrep/blob/master/Boreal_LBMRDataPrep.Rmd">LandR</a><code>: this model is composed of 3 main modules:</code>Boreal_LBMRDataPrep<code>(renamed to Biomass_borealDataPrep): This module converts open datasets that are available for all of Canada's forests, into the input requirements for LandR_BiomassCore, a forest landscape succession model derived from the Landis-II Biomass Succession Model. This has been partially tested for some parts of the Western Boreal Forest. Specifically, it takes the Ecozone, Ecoprovince, and Ecoregion maps of Canada, and species specific biomass maps of Canada (from Beaudoin *et al.* 2014). Keeping these data preparations outside of the LandR_BiomassCore module maintains the modularity of LandR's Biomass_core. See more information on this model in [PredictiveEcology/Biomass_borealDataPrep](https://github.com/PredictiveEcology/Biomass_borealDataPrep/blob/master/Boreal_LBMRDataPrep.Rmd)</code>Biomass_regeneration<code>: A module which handles post-disturbance biomass regeneration.</code>LBMR<code>(renamed to Biomass_core): A biomass succession model derived and modified from LANDIS-II Biomass Succession v3.2.1. LBMR simulates forest succession in a spatially explicit manner (per pixel) by reproducing the population dynamics (growth and mortality), dispersal and competition for light resources of tree species.  Like in LANDIS-II, dynamics are simulated in terms of their biomass per cohort (a combination of species and age), following a</code>biomass ~ age` curve that is influenced by species-specific parameters such as growth, mortality, maximum biomass, and species traits such as longevity and tolerance to shade (see <a href="https://github.com/LANDIS-II-Foundation/Extension-Biomass-Succession/blob/master/docs/LANDIS-II%20Biomass%20Succession%20v3.2%20User%20Guide.docx">LANDIS-II Biomass Succession v3.2 User Guide</a> and <a href="https://pdfs.semanticscholar.org/4d38/d0be6b292eccd444af399775d37a757d1967.pdf">Scheller and Mladenoff (2004)</a>. One of three dispersal algorithms are available: ‘no dispersal’, ‘universal dispersal’(every species can disperse across the entire landscape) and ‘ward dispersal’ (species disperse according to a dispersal kernel, with mean and maximum distances taken from LANDIS-II trait tables), the latter being used by default. The biggest differences between LBMR and LANDIS-II lie on how the model is parametrised and initialized and how different processes have been compartmentalised in order for higher flexibility. See more information on this model in <a href="https://github.com/PredictiveEcology/Biomass_core/blob/cd0e267cf87b5729d84fd980b111f7be189906bd/LBMR.Rmd">PredictiveEcology/Biomass_core</a></p></li>
-<li><p>SCFM (Steve Cumming’s fire model): this model is composed of 3 main modules: <code>ignition</code> <code>escape</code> <code>spread</code></p></li>
+<li><a href="!PLACEHOLDER%20Presentation%20LandR!">LandR</a>: this model is composed of 3 main modules:<br />
+<code>Biomass_borealDataPrep</code>: This module converts open datasets that are available for all of Canada’s forests, into the input requirements for LandR_BiomassCore, a forest landscape succession model derived from the Landis-II Biomass Succession Model. This has been partially tested for some parts of the Western Boreal Forest. Specifically, it takes the Ecozone, Ecoprovince, and Ecoregion maps of Canada, and species specific biomass maps of Canada (from Beaudoin <em>et al.</em> 2014). Keeping these data preparations outside of the LandR_BiomassCore module maintains the modularity of LandR’s Biomass_core. See more information on this model in <a href="https://github.com/PredictiveEcology/Biomass_borealDataPrep">PredictiveEcology/Biomass_borealDataPrep</a> <code>Biomass_regeneration</code>: Biomass_regeneration is a SpaDES module that simulates post-disturbance regeneration mechanisms for Biomass_core. As such, this module is mostly based on the post-disturbance regeneration mechanisms present in LANDIS-II Biomass Succession v3.2.1 extension (see <a href="https://github.com/LANDIS-II-Foundation/Extension-Biomass-Succession/blob/master/docs/LANDIS-II%20Biomass%20Succession%20v3.2%20User%20Guide.docx">LANDIS-II Biomass Succession v3.2 User Guide</a> and <a href="https://pdfs.semanticscholar.org/4d38/d0be6b292eccd444af399775d37a757d1967.pdf">Scheller and Mladenoff (2004)</a>. At the moment, the Biomass_regeneration module only simulates post-fire disturbance effects on forest species, by simulating post-fire mortality and activating serotiny or resprouting mechanisms for each species, depending on their traits (i.e. ability to resprout and/or germinate from seeds, serotiny, following fire). Post-fire mortality behaves in a stand-replacing fashion, i.e. should a pixel be within a fire perimeter (determined by a fire raster) all cohorts see their biomasses set to 0.</li>
 </ol>
-<p>Also needs 3 auxiliary modules to establish the landscape, fire drivers, and fire regime. See more information on this model in <a href="./modules/harvestREADME.Rmd">modules/harvestREADME.Rmd</a></p>
-<ol start="4" style="list-style-type: decimal">
-<li>caribouAlberta (caribou model based on Sorensen’s et al., 2008): this model uses coefficients from Sorensen et al., 2008 to predict caribou lambda (growth rate) in function of disturbance (fire and harvest).</li>
-</ol>
-<div id="running-the-simulations" class="section level3">
-<h3>Running the simulations</h3>
-<div id="setting-up-all-necessary-packages-paths-and-loading-all-necessary-libraries" class="section level4">
-<h4>1. Setting up all necessary packages, paths and loading all necessary libraries</h4>
-<p>When setting up the paths using the <code>SpaDES.core</code> function <code>setPaths()</code>, note that the modules folder should point to where all your modules’ <em>folders</em> are. SpaDES will find all of these by their names.</p>
-<pre class="r"><code>devtools::install_github(&quot;PredictiveEcology/SpaDES.core&quot;, ref = &quot;development&quot;)
-devtools::install_github(&quot;PredictiveEcology/SpaDES.tools&quot;, ref = &quot;development&quot;)
-devtools::install_github(&quot;PredictiveEcology/reproducible&quot;, ref = &quot;development&quot;)
-devtools::install_github(&quot;tati-micheletti/usefun&quot;)
-# Set a few options
-options(spades.lowMemory = TRUE)
-options(spades.moduleCodeChecks = FALSE)
- 
-# Load libraries  
-  library(&quot;SpaDES&quot;)
-  library(&quot;magrittr&quot;)
-  library(&quot;raster&quot;)
-  
-# Set the directories
-  workDirectory &lt;- getwd()
-    SpaDES.core::setPaths(
-           modulePath = file.path(workDirectory, &quot;modules&quot;),
-           inputPath = file.path(workDirectory, &quot;inputs&quot;), 
-           outputPath = file.path(workDirectory, &quot;outputs&quot;),
-           cachePath = file.path(workDirectory, &quot;cache&quot;))</code></pre>
-</div>
-<div id="setting-up-all-inputs-for-the-simulation-runs" class="section level4">
-<h4>2. Setting up all inputs for the simulation runs</h4>
-<p>To setup the simulation, we will set 3 ‘inputs’ for the model:</p>
-<ol style="list-style-type: decimal">
-<li><p><strong>TIME</strong>: start by setting the time for how long you want to run the simulations for. This needs to be a list, in the format of <code>list(start = 0, end = 10)</code>.</p></li>
-<li><p><strong>PARAMETERS</strong>: Next, pass the values of any parameters you would like to change. These values should be a <code>list()</code> of the name of the module that contains these. For example, if you want to modify how often the bird model should be run (by default only happening in the beginning and end of the simulation), you can pass inside the parameters list the following: <code>birdsAlberta = list(.plotInterval = 5)</code>, for it to run every 5 years. You can find all parameters that can be changed in the metadata of each module, together with a default value and the description of what that parameter does.</p></li>
-<li><p><strong>OBJECTS</strong>: At last, pass any objects you might want to override from the defaults. One example is the study area. You can load a shapefile in R, and pass it in the form <code>list(studyArea = shapefile)</code>. The names of all objects passed need to match the names these have in the modules. These can also be found in the metadata of each module.</p></li>
-</ol>
-<p>It is interesting to note that while <strong>objects are shared</strong> accross modules, <strong>parameters are not</strong>. The modules are in fact integrated by the objects these use as <em>inputs</em> and objects these produce as <em>outputs</em>. These also have to be defined in the metadata.</p>
-<p>Module developers should provide default values for all parameters and objetcs, even if the objects are expected as inputs. This guarantees that anyone running your module, even without any data, is capable of seeing it work.</p>
-<pre class="r"><code>times &lt;- list(start = 0, end = 10)
-parameters &lt;- list()
-objects &lt;- list()</code></pre>
-</div>
-<div id="setting-up-the-modules" class="section level4">
-<h4>3. Setting up the modules</h4>
-<p><strong>MODULES</strong>: The last step to run the simulation is to identify which modules you want to run together. This should also be passed as a list of the modules names i.e. list(“module1”, “module2”, “module3”).</p>
-<p>Here, we will mix and match a set of different modules to demonstrate the power of SpaDES. First, we will run a fire model, followed by a harvesting model, and at last, an integrated model that has fire, harvesting, birds and caribous.</p>
-<pre class="r"><code>modulesFire &lt;- list(&quot;scfmLandcoverInit&quot;, &quot;scfmRegime&quot;, 
-                    &quot;scfmDriver&quot;, &quot;scfmIgnition&quot;, 
-                    &quot;scfmEscape&quot;, &quot;scfmSpread&quot;)
-modulesHarvest &lt;- list(&quot;scfmLandcoverInit&quot;, &quot;loadYieldTables&quot;, 
-                       &quot;Hanzlik&quot;, &quot;strataMapFromVegMap&quot;, 
-                       &quot;scfmHarvest&quot;, &quot;stateVars&quot;) 
-allModules &lt;- list(&quot;scfmLandcoverInit&quot;, &quot;scfmRegime&quot;, 
-                   &quot;scfmDriver&quot;, &quot;scfmIgnition&quot;, 
-                   &quot;scfmEscape&quot;, &quot;scfmSpread&quot;, # Fire model
-                   &quot;loadYieldTables&quot;, &quot;Hanzlik&quot;, 
-                   &quot;strataMapFromVegMap&quot;, &quot;scfmHarvest&quot;, # Harvesting
-                   &quot;stateVars&quot;, # Updating maps and variables
-                   &quot;birdsAlberta&quot;, # Bird model
-                   &quot;caribouAlberta&quot;) # Caribou population model</code></pre>
-</div>
-<div id="spades-in-action" class="section level4">
-<h4>4. SpaDES in ACTION!</h4>
-<p>At last, we will run the simulation calling the <code>simInitAndSpades()</code> function. This function needs as inputs the paths, times, parameters, objects, and modules, apart from the <em>loadOrder</em> of the modules. If the load order is not provided, the modules might be loaded in a different order than these are supposed to, which might return an error due to missing objects.</p>
-<div id="fire" class="section level5">
-<h5><strong>FIRE</strong></h5>
-<p>First, we will run the fire model:</p>
-<pre class="r"><code>FIREinAction &lt;- simInitAndSpades(times = times,
-                                   params = parameters,
-                                   modules = modulesFire,
-                                   objects = objects,
-                                   paths = getPaths(),
-                                   loadOrder = unlist(modulesFire))</code></pre>
-<p>Note that you can see all events happening, as well as any messages printed during the simulation. Really handy is also to see all plots while the simulation is running. This is really helpful to visually identify potential problems even before the simulation ends.</p>
-<p>Now we will check some of the results from this simulation. First, lets check the age map, flammable map (where fire can burn), the last years’ fires and the cummulative fire map:</p>
-<p>We can also see some of the fire statistics such as:</p>
-<ol style="list-style-type: decimal">
-<li>Summary of burns</li>
-</ol>
-<pre class="r"><code># Fire Summary
-knitr::kable(FIREinAction$burnSummary)</code></pre>
+<p>As for post-fire regeneration, the module first evaluates whether any species present prior to fire are serotinous. If so, these species will germinate depending on light conditions and their shade tolerance, and depending on their (seed) establishment probability (i.e. germination success) in that pixel. The module then evaluates if any species present before fire are capable of resprouting. If so the model growth these species depending, again, on light conditions and their shade tolerance, and on their resprouting probability (i.e. resprouting success). For any given species in any given pixel, only serotiny or resprouting can occur. Hence, species that are capable of both will only resprout if serotiny was not activated.</p>
+<p>In LANDIS-II, resprouting could never occur in a given pixel if serotiny was activated for one or more species. According to the manual:</p>
+<blockquote>
+<p>If serotiny (only possible immediately following a fire) is triggered for one or more species, then neither resprouting nor seeding will occur. Serotiny is given precedence over resprouting as it typically has a higher threshold for success than resprouting. This slightly favors serotinous species when mixed with species able to resprout following a fire. (<a href="https://github.com/LANDIS-II-Foundation/Extension-Biomass-Succession/blob/master/docs/LANDIS-II%20Biomass%20Succession%20v3.2%20User%20Guide.docx">LANDIS-II Biomass Succession v3.2 User Guide</a>)</p>
+</blockquote>
+<p>This is no longer the case in Biomass_regeneration, where both serotinity and resprouting can occur in the same pixel, although not for the same species. We feel that this is more realistic ecologically, as resprouters will typically regenerate faster after a fire, often shading serotinous species and creating interesting successional feedbacks (e.g. light-loving serotinous species having to “wait” for canopy gaps to germinate). See more information on this model in <a href="https://github.com/PredictiveEcology/Biomass_regeneration">PredictiveEcology/Biomass_regeneration</a> <code>Biomass_core</code>: A biomass succession model derived and modified from LANDIS-II Biomass Succession v3.2.1. Biomass_core simulates forest succession in a spatially explicit manner (per pixel) by reproducing the population dynamics (growth and mortality), dispersal and competition for light resources of tree species. Like in LANDIS-II, dynamics are simulated in terms of their biomass per cohort (a combination of species and age), following a <code>biomass ~ age</code> curve that is influenced by species-specific parameters such as growth, mortality, maximum biomass, and species traits such as longevity and tolerance to shade (see <a href="https://github.com/LANDIS-II-Foundation/Extension-Biomass-Succession/blob/master/docs/LANDIS-II%20Biomass%20Succession%20v3.2%20User%20Guide.docx">LANDIS-II Biomass Succession v3.2 User Guide</a> and <a href="https://pdfs.semanticscholar.org/4d38/d0be6b292eccd444af399775d37a757d1967.pdf">Scheller and Mladenoff (2004)</a>. One of three dispersal algorithms are available: ‘no dispersal’, ‘universal dispersal’(every species can disperse across the entire landscape) and ‘ward dispersal’ (species disperse according to a dispersal kernel, with mean and maximum distances taken from LANDIS-II trait tables), the latter being used by default. The biggest differences between Biomass_core and LANDIS-II lie on how the model is parametrised and initialized and how different processes have been compartmentalised in order for higher flexibility. See more information on this model in <a href="https://github.com/PredictiveEcology/Biomass_core/tree/development">PredictiveEcology/Biomass_core</a></p>
 <ol start="2" style="list-style-type: decimal">
-<li>Probability of ignition of a pixel</li>
+<li><a href="!PLACEHOLDER%20Presentation%20LandR!">scfm</a> (Steve Cumming’s fire model): this model is composed of 3 main modules: <code>ignition</code> <code>escape</code> <code>spread</code></li>
 </ol>
-<pre class="r"><code># Fire Summary
-print(FIREinAction$pIg)</code></pre>
-<ol start="3" style="list-style-type: decimal">
-<li>Fire driver parameters</li>
+<p><code>scfm</code> is described by Cumming et al. (1998), with a more accessible version in Armstrong and Cumming (2003). It was recently implemented as a collection of SpaDES modules by Cumming, McIntire, and Eddy (in prep), with the addition of automated parameter estimation for fire management records. Scfm models fire as a three stage stochastic process of ignition, escape and spread, with each process represented by a dedicated module. Ignition and spread have already been described. The escape stage models the effect of fire suppression, or other ecological or sampling effects that alter the lower end of the fire size distribution. The empirical quantity is the “escape probability”, the probability that a fire will attain a final size greater than the size of a single pixel. This is simulated in the model by determining an initial spread probability such that the probability that a fire stays within its cell of origin equals the escape probability, after accounting for the effect of lakes and other non-flammable geographic features on fire spread. In effect, this distinguishes the first step of the iterative fire spread process. These three modules are used to simulate a fire regime, in terms of the number of fires that start, the escape probability, and the mean fire size.<br />
+In addition to the scfmIgnition, scfmEscape and scfmSpread modules, scfm makes use of several support modules (or objects passed by the user, as in this case) involved in parameter estimation and model calibration. Fire regime parameters for ignition, escape, and a mean fire size, are estimated from historic fire data obtained from the Canadian National Fire Database (Canadian Forest Service, n.d.). Spread probabilities are tuned to replicate the empirical mean fire size by a newly implemented calibration procedure. First, the study region raster is buffered by a set distance and a flammability map is generated for the buffered region using the 2005 Land Cover Map of Canada (Latifovic et al., 2005). Landcover classes such as open water, rock, and ice are classed as non-flammable. Next, several thousand fires are ignited at random locations in landscape and spread with probabilities randomly sampled from a given range (typically 0.18 to 0.24) of spread probabilities. Fires do not start within the buffer area, but may spread to and from the buffer. This effectively removes the influence of edge effects in determining mean fire size, provided the buffer is “wide enough”. Then the spread probabilities and resulting fire sizes are fit with a shape-constrained additive model (SCAM) (Pya and Wood, 2015). The SCAM is monotonic to ensure fire size increases for any incremental increase in spread probability. Lastly, a function minimizer, coupled with the <code>scam predict</code> method, is used to find the spread probability that will reproduce the estimated mean fire size for the region. Parameterization and calibration of the model can be done separately for all the polygons in a given shapefile (e.g., by ecoregion), allowing spatial variation in fire regime parameters among regions.</p>
+<ol start="4" style="list-style-type: decimal">
+<li><a href="!PLACEHOLDER%20Presentation%20LandR!">caribouRSF</a> (resource selection function): Statistical relationships between caribou telemetry locations and habitat characteristics have been summarized (Environment Canada 2011) by resource selection function (RSF; Manly et al. 2002) type models for various parts of Canada. We used the top RSF-type model, a binomial GLMM, for the Taiga Plains ecozone (Environment Canada 2011; Table 46). This model was estimated from individual caribou location data collected from 24 Alberta, 50 British Columbia, and 169 NWT VHF-collared adult female caribou between 2000 and 2010 (Environment Canada 2011; Table 39). The analysis used a habitat use-availability design, so the model predicts relative, not absolute, resource selection (Manly et al. 2002).<br />
+In the Taiga Plains ecozone, relative resource selection by adult female boreal caribou is best described by:<br />
+<span class="math display">\[selection Probability \sim Elevation + Elevation^2 + Vrug + Vrug^2 +\]</span> <span class="math display">\[RoadDensity + Deciduous + Shrub + Herb + Water + RecentBurn + OldBurn\]</span> [Eq. 1]<br />
+The definitions and units of measurement for each covariate can be found in Table 40 of Environment Canada (2011). The methodology is described in Appendix 7.3 of Environment Canada (2011). The model [Eq. 1] includes both static and dynamic covariates. Static covariates were determined from initial conditions. Dynamic covariates were derived from raster layers maintained by one of the ecological process modules (modules listed above). Covariate types and sources are provided below:<br />
+</li>
+<li>Elevation (static; AdaptWest)<br />
+</li>
+<li>Vrug (static; topographic ruggedness (Sappington et al. 2007) taken from AdaptWest.<br />
+</li>
+<li>RoadDensity (static; <code>anthropogenic</code>)<br />
+</li>
+<li>Deciduous (dynamic; <code>LandR</code>)<br />
+</li>
+<li>Shrub (static; LCC2005)<br />
+</li>
+<li>Herb (static; LCC2005)<br />
+</li>
+<li>Water (static; Ducks Unlimited Canada Hybrid Wetland Layer)<br />
+</li>
+<li>RecentBurn (dynamic; <code>scfm-fireSense</code>/<code>scfm</code>)<br />
+</li>
+<li>OldBurn (dynamic; <code>scfm-fireSense</code>/<code>scfm</code>)<br />
+The RSF model is applied on a decadal time step. The output is a raster layer of relative resource selection across the study area. A map of model prediction error (standard error) is also produced. This error comes from bootstrapping the error in the model covariates.</li>
 </ol>
-<pre class="r"><code># Fire Summary
-FIREinAction$scfmDriverPars$`108`</code></pre>
 </div>
-<div id="harvest" class="section level5">
-<h5>HARVEST</h5>
-<p>Now, we will run the harvest model:</p>
-<pre class="r"><code>HARVESTinAction &lt;- simInitAndSpades(times = times, 
-                                   params = parameters, 
-                                   modules = modulesHarvest, 
-                                   objects = objects, 
-                                   paths = getPaths(),
-                                   loadOrder = unlist(modulesHarvest))</code></pre>
-<p>Now we will check some of the results from this simulation. First, lets check the age map, disturbance map (where all the harvest was made), and the strata for harvesting:</p>
-<p>We can also see some of the fire statistics such as harvest statistics (total harvested per strata)</p>
+<div id="running-the-simulations" class="section level2">
+<h2>Running the simulations</h2>
+<div id="global-script" class="section level3">
+<h3>1. <a href="vignettes/01_globalScript.html">Global script</a></h3>
+<p>. We will present here minimal examples of how each one of these models work (i.e. <code>LandR</code>, <code>scfm</code>, and <code>caribouRSF</code>) and how to integrate these into one analysis.</p>
 </div>
-<div id="integrated-model" class="section level5">
-<h5>INTEGRATED MODEL</h5>
-<p>Now, we will integrate the fire, harvesting, birds and caribou:</p>
+<div id="installing-necessary-libraries-and-setting-options" class="section level3">
+<h3>2. <a href="02_librariesAndOptions.html">Installing necessary libraries and setting options</a></h3>
+<pre class="r"><code>install.packages(&quot;devtools&quot;)
+devtools::install_github(&quot;PredictiveEcology/reproducible&quot;, ref = &quot;development&quot;, dependencies = TRUE)
+library(&quot;reproducible&quot;)
+Require(packages = &quot;PredictiveEcology/LandR&quot;, install_githubArgs = list(ref = &quot;development&quot;))
+Require(packages = &quot;PredictiveEcology/quickPlot&quot;, install_githubArgs = list(ref = &quot;development&quot;))
+Require(packages = &quot;PredictiveEcology/SpaDES.tools&quot;, install_githubArgs = list(ref = &quot;development&quot;))
+Require(packages = &quot;PredictiveEcology/SpaDES.experiment&quot;, install_githubArgs = list(ref = &quot;master&quot;))
+Require(packages = &quot;raster&quot;)
+Require(packages = &quot;data.table&quot;)
+options(
+  &quot;spades.recoveryMode&quot; = 2,
+  &quot;spades.lowMemory&quot; = TRUE,
+  &quot;LandR.assertions&quot; = FALSE,
+  &quot;LandR.verbose&quot; = 1,
+  &quot;reproducible.useMemoise&quot; = TRUE, # Brings cached stuff to memory during the second run
+  &quot;reproducible.useNewDigestAlgorithm&quot; = TRUE,  # use the new less strict hashing algo
+  &quot;reproducible.useCache&quot; = TRUE,
+  &quot;pemisc.useParallel&quot; = FALSE
+)</code></pre>
+</div>
+<div id="project-structure" class="section level3">
+<h3>3. <a href="vignettes/03_projectStructure.html">Project structure</a></h3>
+</div>
+<div id="setting-paths" class="section level3">
+<h3>4. <a href="vignettes/04_settingPaths.html">Setting paths</a></h3>
+<pre class="r"><code>inputDirectory &lt;- checkPath(file.path(getwd(), &quot;inputs&quot;), create = TRUE)
+outputDirectory &lt;- checkPath(file.path(getwd(), &quot;outputs&quot;), create = TRUE)
+modulesDirectory &lt;- checkPath(file.path(getwd(), &quot;modules&quot;), create = TRUE)
+cacheDirectory &lt;- checkPath(file.path(getwd(), &quot;cache&quot;), create = TRUE)
+
+setPaths(cachePath = cacheDirectory,
+         modulePath = c(modulesDirectory, 
+                        file.path(modulesDirectory, &quot;scfm/modules&quot;)),
+         inputPath = inputDirectory,
+         outputPath = outputDirectory)</code></pre>
+</div>
+<div id="time" class="section level3">
+<h3>5. <a href="vignettes/05_time.html">Time</a></h3>
+<pre class="r"><code>times &lt;- list(start = 0, end = 10)</code></pre>
+</div>
+<div id="modules" class="section level3">
+<h3>6. <a href="vignettes/06_modules.html">Modules</a></h3>
+<p>These are the modules we will use, in four different simulations.</p>
+<pre class="r"><code>modulesLandR &lt;- c(&quot;Biomass_borealDataPrep&quot;,
+                  &quot;Biomass_core&quot;)
+
+modulesFire &lt;- c(&quot;scfmLandcoverInit&quot;,
+                 &quot;scfmIgnition&quot;,
+                 &quot;scfmEscape&quot;,
+                 &quot;scfmSpread&quot;)
+
+allModules &lt;- c(&quot;Biomass_borealDataPrep&quot;,
+                &quot;Biomass_core&quot;,
+                &quot;scfmIgnition&quot;,
+                 &quot;scfmEscape&quot;,
+                 &quot;scfmSpread&quot;,
+                &quot;caribouRSF&quot;)</code></pre>
+<p>Note that we previously ran three auxiliary fire modules and saved the objects created. The parametrization of SCFM for the study area we have takes about 30 minutes.</p>
+</div>
+<div id="parameters" class="section level3">
+<h3>7. <a href="vignettes/07_parameters.html">Parameters</a></h3>
+<pre class="r"><code>successionTimestep &lt;- 1L
+parameters &lt;- list(
+  Biomass_borealDataPrep = list(
+    &quot;subsetDataBiomassModel&quot; = TRUE,
+    &quot;subsetDataAgeModel&quot; = TRUE
+  ),
+  Biomass_core = list(
+    &quot;.plotInitialTime&quot; = times$start
+    , &quot;sppEquivCol&quot; = &quot;Boreal&quot;
+    , &quot;successionTimestep&quot; = successionTimestep*10
+    , &quot;.useCache&quot; = TRUE 
+    , &quot;.useParallel&quot; = FALSE
+  ),
+  Biomass_regeneration = list(
+    &quot;fireTimestep&quot; = successionTimestep,
+    &quot;fireInitialTime&quot; = times$start
+  ),
+  scfmLandcoverInit = list(
+    &quot;.plotInitialTime&quot; = times$start
+  ),
+  scfmSpread = list(
+    &quot;pSpread&quot; = 0.235,
+    &quot;returnInterval&quot; = successionTimestep,
+    &quot;startTime&quot; = times$start,
+    &quot;.plotInitialTime&quot; = times$start+1,
+    &quot;.plotInterval&quot; = successionTimestep
+    ),
+  caribouRSF = list(
+    &quot;decidousSp&quot; = c(&quot;Betu_Pap&quot;, &quot;Popu_Tre&quot;, &quot;Popu_Bal&quot;),
+    &quot;predictionInterval&quot; = 20
+  )
+)</code></pre>
+</div>
+<div id="objects" class="section level3">
+<h3>8. <a href="vignettes/08_objects.html">Objects</a></h3>
+<div id="a.-load-and-plot-study-area" class="section level4">
+<h4>8a. Load and plot Study Area</h4>
+<pre class="r"><code># load studyArea
+studyArea &lt;- readRDS(file.path(getPaths()$inputPath, &quot;studyArea.rds&quot;))
+
+# NWT land cover classes -- base map to locate study area and be the reference raster (i.e. resolution, crs and extent)
+regionMap &lt;- Cache(reproducible::prepInputs, 
+                   url = &quot;https://drive.google.com/open?id=1WhL-DxrByCbzAj8A7eRx3Y1FVujtGmtN&quot;,
+                   targetFile = &quot;LCC2005_V1_4a_BCR6_NWT.tif&quot;,
+                   destinationPath = getPaths()$inputPath,
+                   fun = &quot;raster::raster&quot;, 
+                   userTags = &quot;objectName:regionMap&quot;)
+Plot(regionMap, title = &quot;The NWT&quot;); Plot(studyArea, addTo = &quot;regionMap&quot;, title = &quot;The NWT&quot;)
+RTM &lt;- Cache(reproducible::prepInputs, 
+                          url = &quot;https://drive.google.com/open?id=1WhL-DxrByCbzAj8A7eRx3Y1FVujtGmtN&quot;, 
+                          studyArea = studyArea,
+                          targetFile = &quot;LCC2005_V1_4a_BCR6_NWT.tif&quot;,
+                          destinationPath = getPaths()$inputPath,
+                          fun = &quot;raster::raster&quot;, 
+                          userTags = &quot;objectName:regionMapCropped&quot;, overwrite = TRUE)</code></pre>
+</div>
+<div id="b.-load-objects-from-inputs-folder" class="section level4">
+<h4>8b. Load objects from inputs folder</h4>
+<pre class="r"><code>flammableMap &lt;- readRDS(file.path(getPaths()$inputPath, &quot;flammableMap.rds&quot;))
+landscapeAttr &lt;- readRDS(file.path(getPaths()$inputPath, &quot;landscapeAttr.rds&quot;))
+scfmDriverPars &lt;- readRDS(file.path(getPaths()$inputPath, &quot;scfmDriverPars.rds&quot;))</code></pre>
+</div>
+<div id="c.-passing-the-study-area-to-the-objects-r-object" class="section level4">
+<h4>8c. Passing the study area to the <code>objects</code> R object</h4>
+<pre class="r"><code>objects &lt;- list(
+  # &quot;rasterToMatch&quot; = RTM, # tried removing, it worked
+  &quot;vegMap&quot; = RTM,
+  &quot;studyArea&quot; = studyArea, #studyArea = studyArea #&quot;studyAreaLarge&quot; = studyAreadid not work: Error in .local(x, y, ...) : extents do not overlap
+  &quot;flammableMap&quot; = flammableMap,
+  &quot;landscapeAttr&quot; = landscapeAttr,
+  &quot;scfmDriverPars&quot; = scfmDriverPars
+  )</code></pre>
+</div>
+</div>
+<div id="siminit-and-the-simlist" class="section level3">
+<h3>9. <a href="vignettes/09_simList.html">SimInit and the simList</a></h3>
+<p>We will run 3 different, independent, simulations: <code>LandR</code>, <code>scfm</code> and <code>caribou</code>, and at last, we will run a simulation with all the modules. The only differece in simulation calls is regarding modules (both <code>modules</code> argument and <code>loadOrder</code>)</p>
+<div id="forest-succession" class="section level4">
+<h4><strong>FOREST SUCCESSION</strong></h4>
+<p>First, we will run the LandR (forest succession) model:</p>
+<pre class="r"><code>LandR &lt;- simInitAndSpades(times = times,
+                          objects = objects,
+                          params = parameters,
+                          modules = as.list(modulesLandR),
+                          paths = getPaths(),
+                          loadOrder = modulesLandR,
+                          debug = 1)</code></pre>
+</div>
+<div id="fire" class="section level4">
+<h4><strong>FIRE</strong></h4>
+<p>Then, we will run the fire model:</p>
+<pre class="r"><code>scfm &lt;- simInitAndSpades(times = times, 
+                         objects = objects,
+                         params = parameters,
+                         modules = as.list(modulesFire),
+                         paths = getPaths(),
+                         loadOrder = modulesFire,
+                         debug = 1)</code></pre>
+</div>
+<div id="caribou-resource-selection-function" class="section level4">
+<h4><strong>CARIBOU RESOURCE SELECTION FUNCTION</strong></h4>
+<p>We will follow by running the caribou model:</p>
+<pre class="r"><code>caribou &lt;- simInitAndSpades(times = times,
+                            objects = objects,
+                            params = parameters,
+                            modules = as.list(&quot;caribouRSF&quot;),
+                            paths = getPaths(),
+                            debug = 1)</code></pre>
+</div>
+<div id="integrated-model" class="section level4">
+<h4><strong>INTEGRATED MODEL</strong></h4>
+<p>At last, we will integrate the forest succession, fire and caribou:</p>
 <pre class="r"><code>SpaDESinAction &lt;- simInitAndSpades(times = times, 
                                    params = parameters, 
                                    modules = allModules, 
                                    objects = objects, 
                                    paths = getPaths(), 
                                    loadOrder = unlist(allModules))</code></pre>
-<p>Now we will check some of the results from this simulation. First, lets check the birds:</p>
-<p>We can even make some cool analysis with these results, such as answering how many birds were lost in the 10 years of the simulation:</p>
-<p>We can also see some of the caribou outputs:</p>
-<ol style="list-style-type: decimal">
-<li><p>Lambda through time</p></li>
-<li><p>Lambda and population size through time</p></li>
-</ol>
+<p>Note that you can see all events happening, as well as any messages printed during the simulation. Really handy is also to see all plots while the simulation is running. This is really helpful to visually identify potential problems even before the simulation ends.</p>
 </div>
+</div>
+<div id="checking-your-outputs" class="section level3">
+<h3>10. <a href="vignettes/10_simOuts.html">Checking your outputs</a></h3>
+<div id="forest-succession-1" class="section level4">
+<h4><strong>FOREST SUCCESSION</strong></h4>
+</div>
+<div id="fire-1" class="section level4">
+<h4><strong>FIRE</strong></h4>
+<p>First, lets check the age map, flammable map (where fire can burn), the last years’ fires and the cummulative fire map:</p>
+<p>We can also see some of the fire statistics such as:</p>
+<ol style="list-style-type: decimal">
+<li>Summary of burns</li>
+</ol>
+<pre class="r"><code># Fire Summary
+knitr::kable(scfm$burnSummary)</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Probability of ignition of a pixel</li>
+</ol>
+<pre class="r"><code># Fire Summary
+print(scfm$pIg)</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Fire driver parameters</li>
+</ol>
+<pre class="r"><code># Fire Summary
+scfm$scfmDriverPars$`108`</code></pre>
+</div>
+<div id="caribou-resource-selection-function-1" class="section level4">
+<h4><strong>CARIBOU RESOURCE SELECTION FUNCTION</strong></h4>
+<p>We can also see some of the caribou outputs:</p>
+</div>
+<div id="integrated-model-1" class="section level4">
+<h4><strong>INTEGRATED MODEL</strong></h4>
 </div>
 </div>
 <div id="hands-on" class="section level3">
 <h3>Hands-on</h3>
-<p>Are you ready to start on SpaDES? You can either play around with these modules (change parameters or change the study the area) or you can start you very own module. For that, you can simply type:</p>
-<pre class="r"><code>newModule(&quot;ModuleName&quot;, path = getPaths()$modulePath)</code></pre>
+<p>Are you ready to start on SpaDES?</p>
 </div>
 </div>
 <div id="happy-spadesing" class="section level2">
 <h2>Happy SpaDESing!!!</h2>
+</div>
 </div>
 
 
