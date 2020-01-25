@@ -6,7 +6,7 @@
 	url = git@github.com:tati-micheletti/Biomass_borealDataPrep.git
 [submodule "modules/scfm"]
 	path = modules/scfm
-	url = git@github.com:tati-micheletti/scfm.git
+	url = git@github.com:PredictiveEcology/scfm.git
 [submodule "modules/Biomass_regeneration"]
 	path = modules/Biomass_regeneration
 	url = git@github.com:PredictiveEcology/Biomass_regeneration.git
