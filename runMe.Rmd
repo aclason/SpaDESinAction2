@@ -83,25 +83,27 @@ The RSF model is applied on a decadal time step. The output is a raster layer of
 ### 2. [Installing necessary libraries and setting options](02_librariesAndOptions.html)  
 
 ```{r librariesAndOptions}
-# install.packages("devtools")
-# devtools::install_github("PredictiveEcology/reproducible", ref = "development", dependencies = TRUE)
+install.packages("devtools") #only needs to be run once
+devtools::install_github("PredictiveEcology/reproducible", ref = "development", dependencies = TRUE)
+Require(packages = "tati-micheletti/usefun", install_githubArgs = list(ref = "master"))
 library("reproducible")
-Require(packages = "PredictiveEcology/LandR", install_githubArgs = list(ref = "development"))
-Require(packages = "PredictiveEcology/quickPlot", install_githubArgs = list(ref = "development"))
-Require(packages = "PredictiveEcology/SpaDES.tools", install_githubArgs = list(ref = "development"))
-Require(packages = "PredictiveEcology/SpaDES.experiment", install_githubArgs = list(ref = "master"))
-Require(packages = "raster")
-Require(packages = "data.table")
+library("SpaDES.core")
+library("SpaDES.tools")
+library("LandR")
+library("pemisc")
+library("raster")
+library("data.table")
 options(
   "spades.recoveryMode" = 2,
   "spades.lowMemory" = TRUE,
   "LandR.assertions" = FALSE,
   "LandR.verbose" = 1,
-  "reproducible.useMemoise" = TRUE, # Brings cached stuff to memory during the second run
+  "reproducible.useMemoise" = FALSE, # Brings cached stuff to memory during the second run
   "reproducible.useNewDigestAlgorithm" = TRUE,  # use the new less strict hashing algo
   "reproducible.useCache" = TRUE,
   "pemisc.useParallel" = FALSE
 )
+
 ```
 
 ### 3. [Project structure](vignettes/03_projectStructure.html)  
@@ -137,15 +139,14 @@ modulesLandR <- c("Biomass_borealDataPrep",
                   "Biomass_core")
 
 modulesFire <- c("scfmLandcoverInit",
+                 "scfmRegime",
+                 "scfmDriver",
                  "scfmIgnition",
                  "scfmEscape",
                  "scfmSpread")
 
-allModules <- c("Biomass_borealDataPrep",
-                "Biomass_core",
-                "scfmIgnition",
-                 "scfmEscape",
-                 "scfmSpread",
+allModules <- c(modulesLandR,
+                modulesFire,
                 "caribouRSF")
 ```
  
@@ -164,7 +165,6 @@ parameters <- list(
     ".plotInitialTime" = times$start
     , "sppEquivCol" = "Boreal"
     , "successionTimestep" = successionTimestep*10
-    , ".useCache" = TRUE 
     , ".useParallel" = FALSE
   ),
   Biomass_regeneration = list(
@@ -173,6 +173,12 @@ parameters <- list(
   ),
   scfmLandcoverInit = list(
     ".plotInitialTime" = times$start
+  ),
+  scfmDriver = list(
+    ".useParallel" = TRUE
+  ),
+    scfmRegime = list(
+    "fireCause" = "L"
   ),
   scfmSpread = list(
     "pSpread" = 0.235,
@@ -204,13 +210,20 @@ regionMap <- Cache(reproducible::prepInputs,
                    fun = "raster::raster", 
                    userTags = "objectName:regionMap")
 Plot(regionMap, title = "The NWT"); Plot(studyArea, addTo = "regionMap", title = "The NWT")
-RTM <- Cache(reproducible::prepInputs, 
+vegetationMap <- Cache(reproducible::prepInputs, 
                           url = "https://drive.google.com/open?id=1WhL-DxrByCbzAj8A7eRx3Y1FVujtGmtN", 
                           studyArea = studyArea,
                           targetFile = "LCC2005_V1_4a_BCR6_NWT.tif",
                           destinationPath = getPaths()$inputPath,
                           fun = "raster::raster", 
                           userTags = "objectName:regionMapCropped", overwrite = TRUE)
+
+# See LandR::sppEquivalencies_CA for current options for species names -- pick species names
+#   in one column -- if not specified, it will pick all species in the studyArea, but will
+#   try by downloading all the species in the boreal forest of Canada (lots of downloads, and likely 
+#   wrong species selection)
+sppNameVector = c("Pice_Gla", "Pice_Mar", "Pinu_Ban", "Lari_Lar", "Popu_Tre", "Betu_Pap")
+    
 ```
 
 #### 8b. Load objects from inputs folder
@@ -218,17 +231,27 @@ RTM <- Cache(reproducible::prepInputs,
 flammableMap <- readRDS(file.path(getPaths()$inputPath, "flammableMap.rds"))
 landscapeAttr <- readRDS(file.path(getPaths()$inputPath, "landscapeAttr.rds"))
 scfmDriverPars <- readRDS(file.path(getPaths()$inputPath, "scfmDriverPars.rds"))
+scfmRegimePars <- readRDS(file.path(getPaths()$inputPath, "scfmRegimePars.rds"))
+firePoints <- readRDS(file.path(getPaths()$inputPath, "firePoints.rds"))
+sppEquivalenciesTable <- readRDS(file.path(getPaths()$inputPath, "sppEquivalenciesTable.rds"))
 ```
 
 #### 8c. Passing the study area to the `objects` R object  
 ```{r objects}
 objects <- list(
-  # "rasterToMatch" = RTM, # tried removing, it worked
-  "vegMap" = RTM,
-  "studyArea" = studyArea, #studyArea = studyArea #"studyAreaLarge" = studyAreadid not work: Error in .local(x, y, ...) : extents do not overlap
-  "flammableMap" = flammableMap,
-  "landscapeAttr" = landscapeAttr,
-  "scfmDriverPars" = scfmDriverPars
+"vegMap" = vegetationMap,
+"sppNameVector" = sppNameVector,
+"studyArea" = studyArea, 
+"sppEquiv" = sppEquivalenciesTable, 
+#  LCC05 = vegetationMap, # If you have no internet, you can supply this object ()
+#  "flammableMap" = flammableMap,
+#  "landscapeAttr" = landscapeAttr,
+#  "scfmDriverPars" = scfmDriverPars,
+#  "scfmRegimePars" = scfmRegimePars,
+#  "firePoints" = firePoints
+"sppColorVect" = c(Betu_Pap = "#8DD3C7", Lari_Lar = "#F2F1BA", Pice_Gla = "#D6A2B0",
+                     Pice_Mar = "#B19DAC", Pinu_Ban = "#E4B378", Popu_Tre = "#B3DE69",
+                     Mixed = "#D0FB84")
   )
 ```
 
@@ -241,6 +264,7 @@ We will run 3 different, independent, simulations: `LandR`, `scfm` and `caribou`
 First, we will run the LandR (forest succession) model:  
 
 ```{r LandRrun}
+clearPlot()
 LandR <- simInitAndSpades(times = times,
                           objects = objects,
                           params = parameters,
@@ -255,13 +279,13 @@ LandR <- simInitAndSpades(times = times,
 Then, we will run the fire model:
 
 ```{r scfmRun}
+clearPlot()
 scfm <- simInitAndSpades(times = times, 
                          objects = objects,
                          params = parameters,
                          modules = as.list(modulesFire),
                          paths = getPaths(),
-                         loadOrder = modulesFire,
-                         debug = 1)
+                         loadOrder = modulesFire)
 ```
 
 #### **CARIBOU RESOURCE SELECTION FUNCTION**
@@ -277,39 +301,48 @@ caribou <- simInitAndSpades(times = times,
                             debug = 1)
 ```
 
+The model threw the intended error. The caribou model was developed in a way to expect input data from either 1) the user, or 2) other modules. If this data is not provided, it stops and warns the user.
+
 #### **INTEGRATED MODEL**
 
 At last, we will integrate the forest succession, fire and caribou:
 
 ```{r integratedModel, message = FALSE, warning = FALSE}
+clearPlot()
 SpaDESinAction <- simInitAndSpades(times = times, 
                                    params = parameters, 
                                    modules = allModules, 
                                    objects = objects, 
                                    paths = getPaths(), 
-                                   loadOrder = unlist(allModules))
+                                   loadOrder = unlist(allModules), 
+                                   debug = 1)
 ```
-
-```{r, include = FALSE}
-dev.off() # This closes the device opened, as we open a new one when we run the next call
-```
-
-Note that you can see all events happening, as well as any messages printed during the simulation. Really handy is also to see all plots while the simulation is running. This is really helpful to visually identify potential problems even before the simulation ends.
+  
+    
+Note that you can see all events happening, as well as any messages printed during the simulation (especially when you use the argument `debug = 1`). Also really handy is to be able to see all plots while the simulation is running. This is helpful to visually identify potential problems even before the simulation ends. This is a great advantage when running SpaDES modules within RStudio. 
 
 ### 10. [Checking your outputs](vignettes/10_simOuts.html)
 
 #### **FOREST SUCCESSION**
 
+We can check some outputs from the forest succession module such as the `cohort table` (with information on species, age, biomass, etc.) and the map of `pixelGroups` (with  information on the specific spatial location of the cohort groups):  
+
+```{r outputsLandR}
+clearPlot()
+plot(SpaDESinAction$pixelGroupMap)
+knitr::kable(rbind(head(SpaDESinAction$cohortData), tail(SpaDESinAction$cohortData)))
+```
+
 #### **FIRE**
 
-First, lets check the age map, flammable map (where fire can burn), the last years' fires and the cummulative fire map:
+First, lets check the flammable map (where fire can burn), the last years' fires and the cummulative fire map:
 
 ```{r plotFire, include = FALSE}
 # Fire plots
 clearPlot()
-Plot(scfm$flammableMap, title = "Flammable Map", col = c("skyblue", "red"))
-Plot(scfm$rstCurrentBurn, title = "Last year's burns", col = c("lightgrey", "red"))
-Plot(scfm$burnMap, title = "Cummulative burn map")
+Plot(SpaDESinAction$flammableMap, title = "Flammable Map", col = c("skyblue", "red"))
+Plot(SpaDESinAction$rstCurrentBurn, title = "Last year's burns", col = c("lightgrey", "red"))
+Plot(SpaDESinAction$burnMap, title = "Cummulative burn map")
 ```
 
 We can also see some of the fire statistics such as:
@@ -317,29 +350,35 @@ We can also see some of the fire statistics such as:
 1. Summary of burns
 ```{r fireSummary1}
 # Fire Summary
-knitr::kable(scfm$burnSummary)
+knitr::kable(SpaDESinAction$burnSummary)
 ```
 
 2. Probability of ignition of a pixel
 ```{r fireSummary2}
 # Fire Summary
-print(scfm$pIg)
+plot(SpaDESinAction$pIg)
 ```
 
-3. Fire driver parameters
+3. Fire driver parameters for polygon 67, for example  
+
 ```{r fireSummary3}
 # Fire Summary
-scfm$scfmDriverPars$`108`
+SpaDESinAction$scfmDriverPars$`67`
 ```
 
 #### **CARIBOU RESOURCE SELECTION FUNCTION**
 
-We can also see some of the caribou outputs:
+We can also see some of the caribou outputs such as the original RSF coefficients' table, the caribou model, and predicted presence probability of caribou in years 0 and 10:
 
+```{r caribouSummary1}
+# Caribou Summary
+knitr::kable(rbind(head(SpaDESinAction$caribouCoefTableRSF), tail(SpaDESinAction$caribouCoefTableRSF)))
+SpaDESinAction$caribouModelsRSF
+Plot(SpaDESinAction$predictedPresenceProbability$Year0$TaigaPlains$relativeSelection, title = "Predicted presence probability of caribou in Year 0")
+Plot(SpaDESinAction$predictedPresenceProbability$Year10$TaigaPlains$relativeSelection, title = "Predicted presence probability of caribou in Year 10")
+```
 
-#### **INTEGRATED MODEL**
-
-
+  
 ### Hands-on
 
 Are you ready to start on SpaDES? 

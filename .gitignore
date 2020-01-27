@@ -2,6 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
-cache/
+cache*/
 outputs/
 inputs/LCC2005_V1_4a.tif
+scfmLog
+SpaDESinAction2.zip
