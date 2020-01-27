@@ -146,6 +146,7 @@ modulesFire <- c("scfmLandcoverInit",
 
 allModules <- c("Biomass_borealDataPrep",
                 "Biomass_core",
+                "scfmLandcoverInit",
                 "scfmIgnition",
                  "scfmEscape",
                  "scfmSpread",
@@ -179,8 +180,11 @@ parameters <- list(
   scfmDriver = list(
     ".useParallel" = TRUE
   ),
+    scfmRegime = list(
+    "fireCause" = "L"
+  ),
   scfmSpread = list(
-    "pSpread" = 0.5, #0.235
+    "pSpread" = 0.235,
     "returnInterval" = successionTimestep,
     "startTime" = times$start,
     ".plotInitialTime" = times$start+1,
@@ -232,12 +236,12 @@ landscapeAttr <- readRDS(file.path(getPaths()$inputPath, "landscapeAttr.rds"))
 scfmDriverPars <- readRDS(file.path(getPaths()$inputPath, "scfmDriverPars.rds"))
 scfmRegimePars <- readRDS(file.path(getPaths()$inputPath, "scfmRegimePars.rds"))
 firePoints <- readRDS(file.path(getPaths()$inputPath, "firePoints.rds"))
+sppEquivalenciesTable <- readRDS(file.path(getPaths()$inputPath, "sppEquivalenciesTable.rds"))
 ```
 
 #### 8c. Passing the study area to the `objects` R object  
 ```{r objects}
 objects <- list(
-  # "rasterToMatch" = RTM, # tried removing, it worked
   "vegMap" = vegetationMap,
 "sppNameVector" = sppNameVector,
 "studyArea" = studyArea#, #studyArea = studyArea #"studyAreaLarge" = studyAreadid not work: Error in .local(x, y, ...) : extents do not overlap
@@ -247,6 +251,9 @@ objects <- list(
 #  "scfmDriverPars" = scfmDriverPars,
 #  "scfmRegimePars" = scfmRegimePars,
 #  "firePoints" = firePoints
+  "sppColorVect" = c(Betu_Pap = "#8DD3C7", Lari_Lar = "#F2F1BA", Pice_Gla = "#D6A2B0",
+                     Pice_Mar = "#B19DAC", Pinu_Ban = "#E4B378", Popu_Tre = "#B3DE69",
+                     Mixed = "#D0FB84")
   )
 ```
 
@@ -294,6 +301,8 @@ caribou <- simInitAndSpades(times = times,
                             debug = 1)
 ```
 
+The model threw the intended error. The caribou model was developed in a way to expect input data from either 1) the user, or 2) other modules. If this data is not provided, it stops and warns the user.
+
 #### **INTEGRATED MODEL**
 
 At last, we will integrate the forest succession, fire and caribou:
@@ -308,18 +317,19 @@ SpaDESinAction <- simInitAndSpades(times = times,
                                    debug = 1)
 ```
   
-  
-Note that you can see all events happening, as well as any messages printed during the simulation. Really handy is also to see all plots while the simulation is running. This is really helpful to visually identify potential problems even before the simulation ends.
+    
+Note that you can see all events happening, as well as any messages printed during the simulation (especially when you use the argument `debug = 1`). Also really handy is to be able to see all plots while the simulation is running. This is helpful to visually identify potential problems even before the simulation ends. This is a great advantage when running SpaDES modules within RStudio. 
 
 ### 10. [Checking your outputs](vignettes/10_simOuts.html)
 
 #### **FOREST SUCCESSION**
 
-We can check some outputs from the forest succession module such as the `cohort table` (with information on species, age, biomass, etc.) and the map of `pixelGroups` (with  information on the specific spatial location of the cohort groups):
+We can check some outputs from the forest succession module such as the `cohort table` (with information on species, age, biomass, etc.) and the map of `pixelGroups` (with  information on the specific spatial location of the cohort groups):  
+
 ```{r outputsLandR}
 clearPlot()
-plot(LandR$pixelGroupMap)
-knitr::kable(rbind(head(LandR$cohortData), tail(LandR$cohortData)))
+plot(SpaDESinAction$pixelGroupMap)
+knitr::kable(rbind(head(SpaDESinAction$cohortData), tail(SpaDESinAction$cohortData)))
 ```
 
 #### **FIRE**
@@ -329,9 +339,9 @@ First, lets check the flammable map (where fire can burn), the last years' fires
 ```{r plotFire, include = FALSE}
 # Fire plots
 clearPlot()
-Plot(scfm$flammableMap, title = "Flammable Map", col = c("skyblue", "red"))
-Plot(scfm$rstCurrentBurn, title = "Last year's burns", col = c("lightgrey", "red"))
-Plot(scfm$burnMap, title = "Cummulative burn map")
+Plot(SpaDESinAction$flammableMap, title = "Flammable Map", col = c("skyblue", "red"))
+Plot(SpaDESinAction$rstCurrentBurn, title = "Last year's burns", col = c("lightgrey", "red"))
+Plot(SpaDESinAction$burnMap, title = "Cummulative burn map")
 ```
 
 We can also see some of the fire statistics such as:
@@ -339,29 +349,35 @@ We can also see some of the fire statistics such as:
 1. Summary of burns
 ```{r fireSummary1}
 # Fire Summary
-knitr::kable(scfm$burnSummary)
+knitr::kable(SpaDESinAction$burnSummary)
 ```
 
 2. Probability of ignition of a pixel
 ```{r fireSummary2}
 # Fire Summary
-print(scfm$pIg)
+plot(SpaDESinAction$pIg)
 ```
 
-3. Fire driver parameters
+3. Fire driver parameters for polygon 67, for example  
+
 ```{r fireSummary3}
 # Fire Summary
-scfm$scfmDriverPars$`108`
+SpaDESinAction$scfmDriverPars$`67`
 ```
 
 #### **CARIBOU RESOURCE SELECTION FUNCTION**
 
-We can also see some of the caribou outputs:
+We can also see some of the caribou outputs such as the original RSF coefficients' table, the caribou model, and predicted presence probability of caribou in years 0 and 10:
 
+```{r caribouSummary1}
+# Caribou Summary
+knitr::kable(rbind(head(SpaDESinAction$caribouCoefTableRSF), tail(SpaDESinAction$caribouCoefTableRSF)))
+SpaDESinAction$caribouModelsRSF
+Plot(SpaDESinAction$predictedPresenceProbability$Year0$TaigaPlains$relativeSelection, title = "Predicted presence probability of caribou in Year 0")
+Plot(SpaDESinAction$predictedPresenceProbability$Year10$TaigaPlains$relativeSelection, title = "Predicted presence probability of caribou in Year 10")
+```
 
-#### **INTEGRATED MODEL**
-
-
+  
 ### Hands-on
 
 Are you ready to start on SpaDES? 
