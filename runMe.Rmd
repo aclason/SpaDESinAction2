@@ -242,10 +242,10 @@ sppEquivalenciesTable <- readRDS(file.path(getPaths()$inputPath, "sppEquivalenci
 #### 8c. Passing the study area to the `objects` R object  
 ```{r objects}
 objects <- list(
-  "vegMap" = vegetationMap,
+"vegMap" = vegetationMap,
 "sppNameVector" = sppNameVector,
-"studyArea" = studyArea#, #studyArea = studyArea #"studyAreaLarge" = studyAreadid not work: Error in .local(x, y, ...) : extents do not overlap
-#  LCC05 = vegetationMap
+"studyArea" = studyArea, 
+#  LCC05 = vegetationMap, # If you have no internet, you can supply this object ()
 #  "flammableMap" = flammableMap,
 #  "landscapeAttr" = landscapeAttr,
 #  "scfmDriverPars" = scfmDriverPars,
