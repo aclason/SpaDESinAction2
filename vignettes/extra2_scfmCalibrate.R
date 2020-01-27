@@ -26,15 +26,25 @@ setPaths(cachePath = cacheDirectory,
                         file.path(modulesDirectory, "scfm/modules")),
          inputPath = inputDirectory,
          outputPath = outputDirectory)
-modulesFireCalibration <- c("scfmLandcoverInit",
-                            "scfmRegime",
-                            "scfmDriver")
-times <- list(start = 0, end = 10)
+modulesFireCalibration <- c("group_scfm")
+times <- list(start = 0, end = 1)
+successionTimestep <- 1L
 parameters <- list(
-  scfmRegime = list(
-    "fireCause" = "L"),
   scfmDriver = list(
-    "targetN" = 1000)
+    "targetN" = 1000),
+  scfmLandcoverInit = list(
+    ".plotInitialTime" = times$start
+  ),
+  scfmRegime = list(
+    "fireCause" = "L"
+  ),
+  scfmSpread = list(
+    "pSpread" = 0.235,
+    "returnInterval" = successionTimestep,
+    "startTime" = times$start,
+    ".plotInitialTime" = times$start+1,
+    ".plotInterval" = successionTimestep
+  )
 )
 # load studyArea
 studyArea <- readRDS(file.path(getPaths()$inputPath, "studyArea.rds"))
@@ -56,20 +66,24 @@ RTM <- Cache(reproducible::prepInputs,
              userTags = "objectName:regionMapCropped", overwrite = TRUE)
 objects <- list(
   "rasterToMatch" = RTM,
-  "rasterToMatchLarge" = RTM,
-  "vegMap" = RTM,
+  # "vegMap" = RTM,
   "studyArea" = studyArea,
+  # "fireRegimePolys " = studyArea,
   "LCC05" = raster(file.path(getwd(), "inputs/LCC2005_V1_4a.tif"))
 )
-scfmCalibration <- simInitAndSpades(times = times, 
+scfmCalibration <- simInit(times = times, 
                          objects = objects,
                          params = parameters,
                          modules = as.list(modulesFireCalibration),
                          paths = getPaths(),
-                         loadOrder = modulesFireCalibration,
-                         debug = 1)
+                         loadOrder = modulesFireCalibration)
+scfmCalibration2 <- spades(scfmCalibration,
+                           debug = 1)
 
-flammableMap <- saveRDS(scfmCalibration$flammableMap, file.path(getPaths()$inputPath, "flammableMap.rds"))
-landscapeAttr <- saveRDS(scfmCalibration$landscapeAttr, file.path(getPaths()$inputPath, "landscapeAttr.rds"))
-scfmDriverPars <- saveRDS(scfmCalibration$scfmDriverPars, file.path(getPaths()$inputPath, "scfmDriverPars.rds"))
 
+flammableMap <- saveRDS(scfmCalibration2$flammableMap, file.path(getPaths()$inputPath, "flammableMap.rds"))
+landscapeAttr <- saveRDS(scfmCalibration2$landscapeAttr, file.path(getPaths()$inputPath, "landscapeAttr.rds"))
+scfmDriverPars <- saveRDS(scfmCalibration2$scfmDriverPars, file.path(getPaths()$inputPath, "scfmDriverPars.rds"))
+scfmRegimePars <- saveRDS(scfmCalibration2$scfmRegimePars, file.path(getPaths()$inputPath, "scfmRegimePars.rds"))
+fireRegimePolys <- saveRDS(scfmCalibration2$fireRegimePolys, file.path(getPaths()$inputPath, "fireRegimePolys.rds"))
+firePoints <- saveRDS(scfmCalibration2$firePoints, file.path(getPaths()$inputPath, "firePoints.rds"))
