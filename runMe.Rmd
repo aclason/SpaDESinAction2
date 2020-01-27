@@ -83,16 +83,16 @@ The RSF model is applied on a decadal time step. The output is a raster layer of
 ### 2. [Installing necessary libraries and setting options](02_librariesAndOptions.html)  
 
 ```{r librariesAndOptions}
-# install.packages("devtools")
-# devtools::install_github("PredictiveEcology/reproducible", ref = "development", dependencies = TRUE)
-library("reproducible")
+install.packages("devtools") #only needs to be run once
+devtools::install_github("PredictiveEcology/reproducible", ref = "development", dependencies = TRUE)
 Require(packages = "tati-micheletti/usefun", install_githubArgs = list(ref = "master"))
-Require(packages = "PredictiveEcology/LandR", install_githubArgs = list(ref = "development"))
-Require(packages = "PredictiveEcology/quickPlot", install_githubArgs = list(ref = "development"))
-Require(packages = "PredictiveEcology/SpaDES.tools", install_githubArgs = list(ref = "development"))
-Require(packages = "PredictiveEcology/SpaDES.experiment", install_githubArgs = list(ref = "master"))
-Require(packages = "raster")
-Require(packages = "data.table")
+library("reproducible")
+library("SpaDES.core")
+library("SpaDES.tools")
+library("LandR")
+library("pemisc")
+library("raster")
+library("data.table")
 options(
   "spades.recoveryMode" = 2,
   "spades.lowMemory" = TRUE,
@@ -103,6 +103,7 @@ options(
   "reproducible.useCache" = TRUE,
   "pemisc.useParallel" = FALSE
 )
+
 ```
 
 ### 3. [Project structure](vignettes/03_projectStructure.html)  
@@ -144,12 +145,8 @@ modulesFire <- c("scfmLandcoverInit",
                  "scfmEscape",
                  "scfmSpread")
 
-allModules <- c("Biomass_borealDataPrep",
-                "Biomass_core",
-                "scfmLandcoverInit",
-                "scfmIgnition",
-                 "scfmEscape",
-                 "scfmSpread",
+allModules <- c(modulesLandR,
+                modulesFire,
                 "caribouRSF")
 ```
  
@@ -245,13 +242,14 @@ objects <- list(
 "vegMap" = vegetationMap,
 "sppNameVector" = sppNameVector,
 "studyArea" = studyArea, 
+"sppEquiv" = sppEquivalenciesTable, 
 #  LCC05 = vegetationMap, # If you have no internet, you can supply this object ()
 #  "flammableMap" = flammableMap,
 #  "landscapeAttr" = landscapeAttr,
 #  "scfmDriverPars" = scfmDriverPars,
 #  "scfmRegimePars" = scfmRegimePars,
 #  "firePoints" = firePoints
-  "sppColorVect" = c(Betu_Pap = "#8DD3C7", Lari_Lar = "#F2F1BA", Pice_Gla = "#D6A2B0",
+"sppColorVect" = c(Betu_Pap = "#8DD3C7", Lari_Lar = "#F2F1BA", Pice_Gla = "#D6A2B0",
                      Pice_Mar = "#B19DAC", Pinu_Ban = "#E4B378", Popu_Tre = "#B3DE69",
                      Mixed = "#D0FB84")
   )
@@ -266,6 +264,7 @@ We will run 3 different, independent, simulations: `LandR`, `scfm` and `caribou`
 First, we will run the LandR (forest succession) model:  
 
 ```{r LandRrun}
+clearPlot()
 LandR <- simInitAndSpades(times = times,
                           objects = objects,
                           params = parameters,
@@ -280,6 +279,7 @@ LandR <- simInitAndSpades(times = times,
 Then, we will run the fire model:
 
 ```{r scfmRun}
+clearPlot()
 scfm <- simInitAndSpades(times = times, 
                          objects = objects,
                          params = parameters,
@@ -308,6 +308,7 @@ The model threw the intended error. The caribou model was developed in a way to 
 At last, we will integrate the forest succession, fire and caribou:
 
 ```{r integratedModel, message = FALSE, warning = FALSE}
+clearPlot()
 SpaDESinAction <- simInitAndSpades(times = times, 
                                    params = parameters, 
                                    modules = allModules, 
