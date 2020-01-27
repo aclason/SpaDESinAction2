@@ -98,7 +98,7 @@ options(
   "spades.lowMemory" = TRUE,
   "LandR.assertions" = FALSE,
   "LandR.verbose" = 1,
-  "reproducible.useMemoise" = TRUE, # Brings cached stuff to memory during the second run
+  "reproducible.useMemoise" = FALSE, # Brings cached stuff to memory during the second run
   "reproducible.useNewDigestAlgorithm" = TRUE,  # use the new less strict hashing algo
   "reproducible.useCache" = TRUE,
   "pemisc.useParallel" = FALSE
@@ -138,6 +138,8 @@ modulesLandR <- c("Biomass_borealDataPrep",
                   "Biomass_core")
 
 modulesFire <- c("scfmLandcoverInit",
+                 "scfmRegime",
+                 "scfmDriver",
                  "scfmIgnition",
                  "scfmEscape",
                  "scfmSpread")
@@ -165,7 +167,6 @@ parameters <- list(
     ".plotInitialTime" = times$start
     , "sppEquivCol" = "Boreal"
     , "successionTimestep" = successionTimestep*10
-    , ".useCache" = "init"
     , ".useParallel" = FALSE
   ),
   Biomass_regeneration = list(
@@ -174,6 +175,9 @@ parameters <- list(
   ),
   scfmLandcoverInit = list(
     ".plotInitialTime" = times$start
+  ),
+  scfmDriver = list(
+    ".useParallel" = TRUE
   ),
   scfmSpread = list(
     "pSpread" = 0.5, #0.235
@@ -212,6 +216,13 @@ vegetationMap <- Cache(reproducible::prepInputs,
                           destinationPath = getPaths()$inputPath,
                           fun = "raster::raster", 
                           userTags = "objectName:regionMapCropped", overwrite = TRUE)
+
+# See LandR::sppEquivalencies_CA for current options for species names -- pick species names
+#   in one column -- if not specified, it will pick all species in the studyArea, but will
+#   try by downloading all the species in the boreal forest of Canada (lots of downloads, and likely 
+#   wrong species selection)
+sppNameVector = c("Pice_Gla", "Pice_Mar", "Pinu_Ban", "Lari_Lar", "Popu_Tre", "Betu_Pap")
+    
 ```
 
 #### 8b. Load objects from inputs folder
@@ -228,12 +239,14 @@ firePoints <- readRDS(file.path(getPaths()$inputPath, "firePoints.rds"))
 objects <- list(
   # "rasterToMatch" = RTM, # tried removing, it worked
   "vegMap" = vegetationMap,
-  "studyArea" = studyArea, #studyArea = studyArea #"studyAreaLarge" = studyAreadid not work: Error in .local(x, y, ...) : extents do not overlap
-  "flammableMap" = flammableMap,
-  "landscapeAttr" = landscapeAttr,
-  "scfmDriverPars" = scfmDriverPars,
-  "scfmRegimePars" = scfmRegimePars,
-  "firePoints" = firePoints
+"sppNameVector" = sppNameVector,
+"studyArea" = studyArea#, #studyArea = studyArea #"studyAreaLarge" = studyAreadid not work: Error in .local(x, y, ...) : extents do not overlap
+#  LCC05 = vegetationMap
+#  "flammableMap" = flammableMap,
+#  "landscapeAttr" = landscapeAttr,
+#  "scfmDriverPars" = scfmDriverPars,
+#  "scfmRegimePars" = scfmRegimePars,
+#  "firePoints" = firePoints
   )
 ```
 
@@ -265,8 +278,7 @@ scfm <- simInitAndSpades(times = times,
                          params = parameters,
                          modules = as.list(modulesFire),
                          paths = getPaths(),
-                         loadOrder = modulesFire,
-                         debug = 1)
+                         loadOrder = modulesFire)
 ```
 
 #### **CARIBOU RESOURCE SELECTION FUNCTION**
