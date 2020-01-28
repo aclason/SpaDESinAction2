@@ -371,7 +371,9 @@ We can also see some of the caribou outputs such as the original RSF coefficient
 ```{r caribouSummary1}
 # Caribou Summary
 knitr::kable(rbind(head(SpaDESinAction$caribouCoefTableRSF), tail(SpaDESinAction$caribouCoefTableRSF)))
-SpaDESinAction$caribouModelsRSF
+
+cat(SpaDESinAction$caribouModelsRSF$TaigaPlains)
+
 Plot(SpaDESinAction$predictedPresenceProbability$Year0$TaigaPlains$relativeSelection, title = "Predicted presence probability of caribou in Year 0")
 Plot(SpaDESinAction$predictedPresenceProbability$Year10$TaigaPlains$relativeSelection, title = "Predicted presence probability of caribou in Year 10")
 ```
