@@ -84,9 +84,7 @@ The RSF model is applied on a decadal time step. The output is a raster layer of
 
 ```{r librariesAndOptions}
 library("usefun")
-library("reproducible")
-library("SpaDES.core")
-library("SpaDES.tools")
+library("SpaDES")
 library("LandR")
 library("pemisc")
 library("raster")
