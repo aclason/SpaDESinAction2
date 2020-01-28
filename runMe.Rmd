@@ -83,9 +83,7 @@ The RSF model is applied on a decadal time step. The output is a raster layer of
 ### 2. [Installing necessary libraries and setting options](02_librariesAndOptions.html)  
 
 ```{r librariesAndOptions}
-# install.packages("devtools") #only needs to be run once
-# devtools::install_github("PredictiveEcology/reproducible", ref = "development", dependencies = TRUE)
-reproducible::Require(packages = "tati-micheletti/usefun", install_githubArgs = list(ref = "master"))
+library("usefun")
 library("reproducible")
 library("SpaDES.core")
 library("SpaDES.tools")
