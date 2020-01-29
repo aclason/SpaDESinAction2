@@ -1,15 +1,15 @@
 [submodule "modules/Biomass_core"]
 	path = modules/Biomass_core
-	url = git@github.com:PredictiveEcology/Biomass_core.git
+	url = https://github.com/PredictiveEcology/Biomass_core.git
 [submodule "modules/Biomass_borealDataPrep"]
 	path = modules/Biomass_borealDataPrep
-	url = git@github.com:tati-micheletti/Biomass_borealDataPrep.git
+	url = https://github.com/tati-micheletti/Biomass_borealDataPrep.git
 [submodule "modules/scfm"]
 	path = modules/scfm
-	url = git@github.com:tati-micheletti/scfm.git
+	url = https://github.com/tati-micheletti/scfm.git
 [submodule "modules/Biomass_regeneration"]
 	path = modules/Biomass_regeneration
-	url = git@github.com:PredictiveEcology/Biomass_regeneration.git
+	url = https://github.com/PredictiveEcology/Biomass_regeneration.git
 [submodule "modules/caribouRSF"]
 	path = modules/caribouRSF
-	url = git@github.com:tati-micheletti/caribouRSF.git
+	url = https://github.com/tati-micheletti/caribouRSF.git
