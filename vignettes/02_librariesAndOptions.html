@@ -187,17 +187,14 @@ summary {
 
 <div id="a.-libraries" class="section level4">
 <h4>A. Libraries</h4>
-<p>The first step to run the simulations is to install all libraries options for it. The function <code>Require</code> from the <code>reproducible</code> package installs packages that are not installed, and loads the installed package.</p>
-<pre class="r"><code>install.packages(&quot;devtools&quot;)
-devtools::install_github(&quot;PredictiveEcology/reproducible&quot;, ref = &quot;development&quot;, dependencies = TRUE)
-library(&quot;reproducible&quot;)
-Require(packages = &quot;PredictiveEcology/LandR&quot;, install_githubArgs = list(ref = &quot;development&quot;))
-Require(packages = &quot;PredictiveEcology/quickPlot&quot;, install_githubArgs = list(ref = &quot;development&quot;))
-Require(packages = &quot;PredictiveEcology/SpaDES.tools&quot;, install_githubArgs = list(ref = &quot;development&quot;))
-Require(packages = &quot;PredictiveEcology/SpaDES.experiment&quot;, install_githubArgs = list(ref = &quot;master&quot;))
-Require(packages = &quot;raster&quot;)
-Require(packages = &quot;data.table&quot;)</code></pre>
-<p>The first step to run the simulations is to install all libraries options for it.</p>
+<p>The first step to run the simulations is to install all libraries options for it. For that, we can use the function <code>Require</code> from the <code>reproducible</code> package. It installs packages that are not installed, and loads the installed package.</p>
+<pre class="r"><code>library(&quot;reproducible&quot;)
+Require(&quot;usefun&quot;)
+Require(&quot;SpaDES&quot;)
+Require(&quot;LandR&quot;)
+Require(&quot;pemisc&quot;)
+Require(&quot;raster&quot;)
+Require(&quot;data.table&quot;)</code></pre>
 </div>
 <div id="b.-options" class="section level4">
 <h4>B. Options</h4>

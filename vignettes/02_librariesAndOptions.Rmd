@@ -11,21 +11,17 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 
 #### A. Libraries  
 
-The first step to run the simulations is to install all libraries options for it. The function `Require` from the `reproducible` package installs packages that are not installed, and loads the installed package.
+The first step to run the simulations is to install all libraries options for it. For that, we can  use the function `Require` from the `reproducible` package. It installs packages that are not installed, and loads the installed package.
 
 ```{r libraries}
-install.packages("devtools")
-devtools::install_github("PredictiveEcology/reproducible", ref = "development", dependencies = TRUE)
 library("reproducible")
-Require(packages = "PredictiveEcology/LandR", install_githubArgs = list(ref = "development"))
-Require(packages = "PredictiveEcology/quickPlot", install_githubArgs = list(ref = "development"))
-Require(packages = "PredictiveEcology/SpaDES.tools", install_githubArgs = list(ref = "development"))
-Require(packages = "PredictiveEcology/SpaDES.experiment", install_githubArgs = list(ref = "master"))
-Require(packages = "raster")
-Require(packages = "data.table")
+Require("usefun")
+Require("SpaDES")
+Require("LandR")
+Require("pemisc")
+Require("raster")
+Require("data.table")
 ```
-
-The first step to run the simulations is to install all libraries options for it.
 
 #### B. Options
 
