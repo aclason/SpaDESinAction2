@@ -7,7 +7,7 @@ output:
   pdf_document: default
 ---
 ```{r init, include=FALSE}
-# knitr::opts_chunk$set(cache = FALSE, echo = TRUE, eval = FALSE)
+knitr::opts_chunk$set(cache = FALSE, echo = TRUE, eval = FALSE)
 ```
 
 # Integrated simulation models: forest succession, wildfire and caribou
