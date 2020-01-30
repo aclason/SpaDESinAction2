@@ -97,7 +97,6 @@ options(
   "reproducible.useCache" = TRUE,
   "pemisc.useParallel" = FALSE
 )
-
 ```
 
 ### 3. [Project structure](vignettes/03_projectStructure.html)  
@@ -130,7 +129,8 @@ These are the modules we will use, in four different simulations.
 ```{r modules}
 
 modulesLandR <- c("Biomass_borealDataPrep",
-                  "Biomass_core")
+                  "Biomass_core",
+                  "Biomass_regeneration")
 
 modulesFire <- c("scfmLandcoverInit",
                  "scfmRegime",
@@ -220,15 +220,19 @@ sppNameVector = c("Pice_Gla", "Pice_Mar", "Pinu_Ban", "Lari_Lar", "Popu_Tre", "B
     
 ```
 
-#### 8b. Load objects from inputs folder [Optional]
+#### 8b. Load objects from inputs folder [Optional, except if no internet]
 
 ```{r fireObjects}
-flammableMap <- readRDS(file.path(getPaths()$inputPath, "flammableMap.rds"))
-landscapeAttr <- readRDS(file.path(getPaths()$inputPath, "landscapeAttr.rds"))
-scfmDriverPars <- readRDS(file.path(getPaths()$inputPath, "scfmDriverPars.rds"))
-scfmRegimePars <- readRDS(file.path(getPaths()$inputPath, "scfmRegimePars.rds"))
-firePoints <- readRDS(file.path(getPaths()$inputPath, "firePoints.rds"))
-sppEquivalenciesTable <- readRDS(file.path(getPaths()$inputPath, "sppEquivalenciesTable.rds"))
+# The following objects CAN to be supplied to speed up the simulations
+# flammableMap <- readRDS(file.path(getPaths()$inputPath, "flammableMap.rds"))
+# landscapeAttr <- readRDS(file.path(getPaths()$inputPath, "landscapeAttr.rds"))
+# scfmDriverPars <- readRDS(file.path(getPaths()$inputPath, "scfmDriverPars.rds"))
+# scfmRegimePars <- readRDS(file.path(getPaths()$inputPath, "scfmRegimePars.rds"))
+# firePoints <- readRDS(file.path(getPaths()$inputPath, "firePoints.rds"))
+
+# The following objects NEED to be supplied if no internet is available
+sppEquivalenciesTable <- readRDS(file.path(getPaths()$inputPath, "sppEquivalenciesTable.rds")) 
+speciesLayers <- readRDS(file.path(getPaths()$inputPath, "speciesLayers.rds"))
 ```
 
 #### 8c. Passing the study area to the `objects` R object  
@@ -237,13 +241,14 @@ objects <- list(
 "vegMap" = vegetationMap,
 "sppNameVector" = sppNameVector,
 "studyArea" = studyArea, 
-"sppEquiv" = sppEquivalenciesTable, 
-#  LCC05 = vegetationMap, # If you have no internet, you can supply these objects
-#  "flammableMap" = flammableMap,
-#  "landscapeAttr" = landscapeAttr,
-#  "scfmDriverPars" = scfmDriverPars,
-#  "scfmRegimePars" = scfmRegimePars,
-#  "firePoints" = firePoints
+"sppEquiv" = sppEquivalenciesTable,  # If you have no internet, you HAVE to supply this object
+"speciesLayers" = speciesLayers, # If you have no internet, you HAVE to supply this object
+#  LCC05 = vegetationMap, # If you want to speed up the simulations, you can supply these objects
+#  "flammableMap" = flammableMap,# If you want to speed up the simulations, you can supply these objects
+#  "landscapeAttr" = landscapeAttr,# If you want to speed up the simulations, you can supply these objects
+#  "scfmDriverPars" = scfmDriverPars,# If you want to speed up the simulations, you can supply these objects
+#  "scfmRegimePars" = scfmRegimePars,# If you want to speed up the simulations, you can supply these objects
+#  "firePoints" = firePoints, # If you want to speed up the simulations, you can supply these objects
 "sppColorVect" = c(Betu_Pap = "#8DD3C7", Lari_Lar = "#F2F1BA", Pice_Gla = "#D6A2B0",
                      Pice_Mar = "#B19DAC", Pinu_Ban = "#E4B378", Popu_Tre = "#B3DE69",
                      Mixed = "#D0FB84")
